@@ -42,7 +42,6 @@
 .nav-link.active::after {
   background: #747bff;
 }
-/* === */
 
 .gallery {
   display: grid;
