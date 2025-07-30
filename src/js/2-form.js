@@ -1,44 +1,64 @@
-const form = document.querySelector('.feedback-form');
-const STORAGE_KEY = 'feedback-form-state';
-
 let formData = {
+  email: "",
+  message: "",
+};
+
+const STORAGE_KEY = 'feedback-form-state';
+const formFeedback = document.querySelector('.feedback-form');
+
+document.addEventListener('DOMContentLoaded', () => {
+  const savedData = getFromLS(STORAGE_KEY, {});
+  if (savedData?.email || savedData?.message) {
+    formData = savedData;
+    formFeedback.elements.email.value = savedData.email || '';
+    formFeedback.elements.message.value = savedData.message || '';
+  }
+});
+
+
+formFeedback.addEventListener('input', e => {
+  const email = formFeedback.elements.email.value.trim();
+  const message = formFeedback.elements.message.value.trim();
+
+  formData = {
+    email,
+    message,
+  };
+
+  saveToLS(STORAGE_KEY, formData);
+});
+
+formFeedback.addEventListener('submit', e => {
+  e.preventDefault();
+
+  const email = formFeedback.elements.email.value.trim();
+  const message = formFeedback.elements.message.value.trim();
+
+  if (email === '' || message === '') {
+    alert('Будь ласка, заповніть обидва поля.');
+    return;
+  }
+
+
+  console.log({ email, message });
+
+  formFeedback.reset();
+  localStorage.removeItem(STORAGE_KEY);
+  formData = {
     email: '',
     message: '',
-};
-
-loadFormData();
-
-form.addEventListener('input', event => {
-    const { name, value } = event.target;
-    formData[name] = value.trim();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+  };
 });
 
-form.addEventListener('submit', event => {
-    event.preventDefault();
-    const { email, message } = formData;
-    if (!email.trim() || !message.trim()) {
-        alert('Fill please all fields');
-        return;
-    }
+function saveToLS(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
 
-console.log('Submitted data:', formData);
-
-  localStorage.removeItem(STORAGE_KEY);
-  formData = { email: '', message: '' };
-  form.reset();
-});
-
-function loadFormData() {
+function getFromLS(key, defaultValue = {}) {
   try {
-    const saveData = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (saveData) {
-      formData.email = saveData.email || '';
-      formData.message = saveData.message || '';
-      form.elements.email.value = formData.email;
-      form.elements.message.value = formData.message;
-    }
-  } catch (error) {
-    console.error('Error reading localStorage data:', error);
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : defaultValue;
+  } catch {
+    return defaultValue;
   }
-};
+}
